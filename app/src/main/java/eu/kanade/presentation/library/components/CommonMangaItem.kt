@@ -30,6 +30,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shadow
@@ -128,14 +129,14 @@ private fun BoxScope.CoverTextOverlay(
 ) {
     Box(
         modifier = Modifier
-            .clip(RoundedCornerShape(bottomStart = 4.dp, bottomEnd = 4.dp))
+            .clip(RoundedCornerShape(bottomStart = 12.dp, bottomEnd = 12.dp))
             .background(
                 Brush.verticalGradient(
                     0f to Color.Transparent,
-                    1f to Color(0xAA000000),
+                    1f to Color(0xCC000000),
                 ),
             )
-            .fillMaxHeight(0.33f)
+            .fillMaxHeight(0.5f)
             .fillMaxWidth()
             .align(Alignment.BottomCenter),
     )
@@ -242,7 +243,12 @@ private fun MangaGridCover(
     Box(
         modifier = modifier
             .fillMaxWidth()
-            .aspectRatio(MangaCover.Book.ratio),
+            .aspectRatio(MangaCover.Book.ratio)
+            .shadow(
+                elevation = 8.dp,
+                shape = RoundedCornerShape(12.dp),
+                clip = true,
+            ),
     ) {
         cover()
         content?.invoke(this)

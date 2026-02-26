@@ -27,7 +27,7 @@ android {
         applicationId = "app.hikari"
 
         versionCode = 18
-        versionName = "0.19.8"
+        versionName = "0.20.0"
 
         buildConfigField("String", "COMMIT_COUNT", "\"${getCommitCount()}\"")
         buildConfigField("String", "COMMIT_SHA", "\"${getGitSha()}\"")
