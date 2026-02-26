@@ -41,6 +41,7 @@ import androidx.compose.ui.unit.sp
 import eu.kanade.presentation.manga.components.MangaCover
 import tachiyomi.i18n.MR
 import tachiyomi.presentation.core.components.BadgeGroup
+import tachiyomi.presentation.core.components.material.padding
 import tachiyomi.presentation.core.i18n.stringResource
 import tachiyomi.presentation.core.util.selectedBackground
 import tachiyomi.domain.manga.model.MangaCover as MangaCoverModel
@@ -347,7 +348,7 @@ fun MangaListItem(
                 onClick = onClick,
                 onLongClick = onLongClick,
             )
-            .padding(horizontal = 16.dp, vertical = 8.dp),
+            .padding(horizontal = MaterialTheme.padding.medium, vertical = MaterialTheme.padding.small),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         MangaCover.Square(
@@ -359,7 +360,7 @@ fun MangaListItem(
         Text(
             text = title,
             modifier = Modifier
-                .padding(horizontal = 16.dp)
+                .padding(horizontal = MaterialTheme.padding.medium)
                 .weight(1f),
             maxLines = 2,
             overflow = TextOverflow.Ellipsis,

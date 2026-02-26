@@ -48,6 +48,7 @@ import eu.kanade.presentation.browse.components.ExtensionIcon
 import eu.kanade.presentation.components.AppBar
 import eu.kanade.presentation.components.AppBarActions
 import eu.kanade.presentation.components.WarningBanner
+import eu.kanade.presentation.more.settings.widget.PreferenceGroupHeader
 import eu.kanade.presentation.more.settings.widget.TextPreferenceWidget
 import eu.kanade.presentation.more.settings.widget.TrailingWidgetBuffer
 import eu.kanade.tachiyomi.R
@@ -215,15 +216,7 @@ private fun ExtensionDetails(
 
         if (extension.sources.isNotEmpty() && excludedManga.isNotEmpty()) {
             item {
-                Text(
-                    text = stringResource(MR.strings.label_hidden_manga),
-                    modifier = Modifier.padding(
-                        horizontal = MaterialTheme.padding.medium,
-                        vertical = MaterialTheme.padding.small,
-                    ),
-                    style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.primary,
-                )
+                PreferenceGroupHeader(title = stringResource(MR.strings.label_hidden_manga))
             }
 
             items(
@@ -396,8 +389,6 @@ private fun DetailsHeader(
                 }
             },
         )
-
-        HorizontalDivider()
     }
 }
 
