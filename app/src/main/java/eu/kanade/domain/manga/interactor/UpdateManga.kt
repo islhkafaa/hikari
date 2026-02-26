@@ -116,4 +116,10 @@ class UpdateManga(
             MangaUpdate(id = mangaId, favorite = favorite, dateAdded = dateAdded),
         )
     }
+
+    suspend fun awaitUpdateExcluded(mangaId: Long, excluded: Boolean): Boolean {
+        return mangaRepository.update(
+            MangaUpdate(id = mangaId, excluded = excluded),
+        )
+    }
 }

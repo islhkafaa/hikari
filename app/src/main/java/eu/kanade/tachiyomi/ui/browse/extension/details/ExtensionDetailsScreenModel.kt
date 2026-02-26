@@ -6,6 +6,7 @@ import cafe.adriel.voyager.core.model.StateScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
 import eu.kanade.domain.extension.interactor.ExtensionSourceItem
 import eu.kanade.domain.extension.interactor.GetExtensionSources
+import eu.kanade.domain.manga.interactor.UpdateManga
 import eu.kanade.domain.source.interactor.ToggleIncognito
 import eu.kanade.domain.source.interactor.ToggleSource
 import eu.kanade.domain.source.service.SourcePreferences
@@ -21,6 +22,7 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.receiveAsFlow
@@ -28,7 +30,10 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import logcat.LogPriority
 import okhttp3.HttpUrl.Companion.toHttpUrl
+import tachiyomi.core.common.util.lang.launchIO
 import tachiyomi.core.common.util.system.logcat
+import tachiyomi.domain.manga.interactor.GetExcludedManga
+import tachiyomi.domain.manga.model.Manga
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
@@ -41,6 +46,8 @@ class ExtensionDetailsScreenModel(
     private val toggleSource: ToggleSource = Injekt.get(),
     private val toggleIncognito: ToggleIncognito = Injekt.get(),
     private val preferences: SourcePreferences = Injekt.get(),
+    private val getExcludedManga: GetExcludedManga = Injekt.get(),
+    private val updateManga: UpdateManga = Injekt.get(),
 ) : StateScreenModel<ExtensionDetailsScreenModel.State>(State()) {
 
     private val _events: Channel<ExtensionDetailsEvent> = Channel()
@@ -62,28 +69,31 @@ class ExtensionDetailsScreenModel(
                     }
             }
             launch {
-                state.collectLatest { state ->
-                    if (state.extension == null) return@collectLatest
-                    getExtensionSources.subscribe(state.extension)
-                        .map {
-                            it.sortedWith(
-                                compareBy(
-                                    { !it.enabled },
-                                    { item ->
-                                        item.source.name.takeIf { item.labelAsName }
-                                            ?: LocaleHelper.getSourceDisplayName(item.source.lang, context).lowercase()
-                                    },
-                                ),
-                            )
-                        }
-                        .catch { throwable ->
-                            logcat(LogPriority.ERROR, throwable)
-                            mutableState.update { it.copy(_sources = persistentListOf()) }
-                        }
-                        .collectLatest { sources ->
-                            mutableState.update { it.copy(_sources = sources.toImmutableList()) }
-                        }
-                }
+                state
+                    .map { it.extension }
+                    .distinctUntilChanged()
+                    .collectLatest { extension ->
+                        if (extension == null) return@collectLatest
+                        getExtensionSources.subscribe(extension)
+                            .map {
+                                it.sortedWith(
+                                    compareBy(
+                                        { !it.enabled },
+                                        { item ->
+                                            item.source.name.takeIf { item.labelAsName }
+                                                ?: LocaleHelper.getSourceDisplayName(item.source.lang, context).lowercase()
+                                        },
+                                    ),
+                                )
+                            }
+                            .catch { throwable ->
+                                logcat(LogPriority.ERROR, throwable)
+                                mutableState.update { it.copy(_sources = persistentListOf()) }
+                            }
+                            .collectLatest { sources ->
+                                mutableState.update { it.copy(_sources = sources.toImmutableList()) }
+                            }
+                    }
             }
             launch {
                 preferences.incognitoExtensions()
@@ -92,6 +102,26 @@ class ExtensionDetailsScreenModel(
                     .distinctUntilChanged()
                     .collectLatest { isIncognito ->
                         mutableState.update { it.copy(isIncognito = isIncognito) }
+                    }
+            }
+            launch {
+                state
+                    .map { it.extension?.sources?.map { it.id } }
+                    .distinctUntilChanged()
+                    .collectLatest { sourceIds ->
+                        if (sourceIds.isNullOrEmpty()) {
+                            mutableState.update { it.copy(excludedManga = persistentListOf()) }
+                            return@collectLatest
+                        }
+
+                        combine(
+                            sourceIds.map { getExcludedManga.subscribe(it) }
+                        ) { arrays ->
+                            arrays.flatMap { it }.toImmutableList()
+                        }
+                            .collectLatest { excludedManga ->
+                                mutableState.update { it.copy(excludedManga = excludedManga) }
+                            }
                     }
             }
         }
@@ -138,11 +168,18 @@ class ExtensionDetailsScreenModel(
         }
     }
 
+    fun unhideManga(mangaId: Long) {
+        screenModelScope.launch {
+            updateManga.awaitUpdateExcluded(mangaId, false)
+        }
+    }
+
     @Immutable
     data class State(
         val extension: Extension.Installed? = null,
         val isIncognito: Boolean = false,
         private val _sources: ImmutableList<ExtensionSourceItem>? = null,
+        val excludedManga: ImmutableList<Manga> = persistentListOf(),
     ) {
 
         val sources: ImmutableList<ExtensionSourceItem>

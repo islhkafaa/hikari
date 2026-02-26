@@ -26,6 +26,7 @@ import eu.kanade.tachiyomi.util.removeCovers
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.firstOrNull
@@ -33,6 +34,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import tachiyomi.domain.manga.interactor.GetExcludedManga
 import tachiyomi.core.common.preference.CheckboxState
 import tachiyomi.core.common.preference.mapAsCheckboxState
 import tachiyomi.core.common.util.lang.launchIO
@@ -69,6 +71,7 @@ class BrowseSourceScreenModel(
     private val updateManga: UpdateManga = Injekt.get(),
     private val addTracks: AddTracks = Injekt.get(),
     private val getIncognitoState: GetIncognitoState = Injekt.get(),
+    private val getExcludedManga: GetExcludedManga = Injekt.get(),
 ) : StateScreenModel<BrowseSourceScreenModel.State>(State(Listing.valueOf(listingQuery))) {
 
     var displayMode by sourcePreferences.sourceDisplayMode().asState(screenModelScope)
@@ -114,9 +117,15 @@ class BrowseSourceScreenModel(
                         .map { it ?: manga }
                         .stateIn(ioCoroutineScope)
                 }
-                    .filter { !hideInLibraryItems || !it.value.favorite }
             }
                 .cachedIn(ioCoroutineScope)
+                .combine(getExcludedManga.subscribe(sourceId).distinctUntilChanged()) { pagingData, excluded ->
+                    val excludedIds = excluded.map { it.id }.toSet()
+                    pagingData.filter { mangaState ->
+                        if (hideInLibraryItems && mangaState.value.favorite) return@filter false
+                        !excludedIds.contains(mangaState.value.id) && !mangaState.value.excluded
+                    }
+                }
         }
         .stateIn(ioCoroutineScope, SharingStarted.Lazily, emptyFlow())
 
@@ -273,6 +282,12 @@ class BrowseSourceScreenModel(
         }
     }
 
+    fun setExcluded(manga: Manga, excluded: Boolean) {
+        screenModelScope.launchIO {
+            updateManga.awaitUpdateExcluded(manga.id, excluded)
+        }
+    }
+
     /**
      * Get user categories.
      *
@@ -336,6 +351,7 @@ class BrowseSourceScreenModel(
     sealed interface Dialog {
         data object Filter : Dialog
         data class RemoveManga(val manga: Manga) : Dialog
+        data class ExcludeManga(val manga: Manga) : Dialog
         data class AddDuplicateManga(val manga: Manga, val duplicates: List<MangaWithChapterCount>) : Dialog
         data class ChangeMangaCategory(
             val manga: Manga,

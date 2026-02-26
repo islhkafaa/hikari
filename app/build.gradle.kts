@@ -26,8 +26,8 @@ android {
     defaultConfig {
         applicationId = "app.hikari"
 
-        versionCode = 16
-        versionName = "0.19.3"
+        versionCode = 17
+        versionName = "0.19.4"
 
         buildConfigField("String", "COMMIT_COUNT", "\"${getCommitCount()}\"")
         buildConfigField("String", "COMMIT_SHA", "\"${getGitSha()}\"")
@@ -49,6 +49,8 @@ android {
             isShrinkResources = Config.enableCodeShrink
 
             proguardFiles("proguard-android-optimize.txt", "proguard-rules.pro")
+
+            signingConfig = debug.signingConfig
 
             buildConfigField("String", "BUILD_TIME", "\"${getBuildTime(useLastCommitTime = true)}\"")
         }

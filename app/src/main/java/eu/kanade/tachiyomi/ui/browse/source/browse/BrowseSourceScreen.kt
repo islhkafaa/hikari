@@ -39,6 +39,7 @@ import eu.kanade.core.util.ifSourcesLoaded
 import eu.kanade.presentation.browse.BrowseSourceContent
 import eu.kanade.presentation.browse.MissingSourceScreen
 import eu.kanade.presentation.browse.components.BrowseSourceToolbar
+import eu.kanade.presentation.browse.components.ExcludeMangaDialog
 import eu.kanade.presentation.browse.components.RemoveMangaDialog
 import eu.kanade.presentation.category.components.ChangeCategoryDialog
 import eu.kanade.presentation.manga.DuplicateMangaDialog
@@ -123,7 +124,7 @@ data class BrowseSourceScreen(
         }
 
         Scaffold(
-            topBar = {
+            topBar = { scrollBehavior ->
                 Column(
                     modifier = Modifier
                         .background(MaterialTheme.colorScheme.surface)
@@ -140,6 +141,7 @@ data class BrowseSourceScreen(
                         onHelpClick = onHelpClick,
                         onSettingsClick = { navigator.push(SourcePreferencesScreen(sourceId)) },
                         onSearch = screenModel::search,
+                        scrollBehavior = scrollBehavior,
                     )
 
                     Row(
@@ -226,10 +228,7 @@ data class BrowseSourceScreen(
                         val duplicates = screenModel.getDuplicateLibraryManga(manga)
                         when {
                             manga.favorite -> screenModel.setDialog(BrowseSourceScreenModel.Dialog.RemoveManga(manga))
-                            duplicates.isNotEmpty() -> screenModel.setDialog(
-                                BrowseSourceScreenModel.Dialog.AddDuplicateManga(manga, duplicates),
-                            )
-                            else -> screenModel.addFavorite(manga)
+                            else -> screenModel.setDialog(BrowseSourceScreenModel.Dialog.ExcludeManga(manga))
                         }
                         haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                     }
@@ -274,6 +273,15 @@ data class BrowseSourceScreen(
                         screenModel.changeMangaFavorite(dialog.manga)
                     },
                     mangaToRemove = dialog.manga,
+                )
+            }
+            is BrowseSourceScreenModel.Dialog.ExcludeManga -> {
+                ExcludeMangaDialog(
+                    onDismissRequest = onDismissRequest,
+                    onConfirm = {
+                        screenModel.setExcluded(dialog.manga, true)
+                    },
+                    mangaToHide = dialog.manga,
                 )
             }
             is BrowseSourceScreenModel.Dialog.ChangeMangaCategory -> {

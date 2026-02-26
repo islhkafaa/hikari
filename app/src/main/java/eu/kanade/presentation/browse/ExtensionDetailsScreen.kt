@@ -58,6 +58,7 @@ import eu.kanade.tachiyomi.util.system.LocaleHelper
 import eu.kanade.tachiyomi.util.system.copyToClipboard
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
+import tachiyomi.domain.manga.model.Manga
 import tachiyomi.i18n.MR
 import tachiyomi.presentation.core.components.ScrollbarLazyColumn
 import tachiyomi.presentation.core.components.material.Scaffold
@@ -76,6 +77,7 @@ fun ExtensionDetailsScreen(
     onClickUninstall: () -> Unit,
     onClickSource: (sourceId: Long) -> Unit,
     onClickIncognito: (Boolean) -> Unit,
+    onClickUnhide: (mangaId: Long) -> Unit,
 ) {
     val uriHandler = LocalUriHandler.current
     val url = remember(state.extension) {
@@ -149,6 +151,8 @@ fun ExtensionDetailsScreen(
             onClickUninstall = onClickUninstall,
             onClickSource = onClickSource,
             onClickIncognito = onClickIncognito,
+            onClickUnhide = onClickUnhide,
+            excludedManga = state.excludedManga,
         )
     }
 }
@@ -163,6 +167,8 @@ private fun ExtensionDetails(
     onClickUninstall: () -> Unit,
     onClickSource: (sourceId: Long) -> Unit,
     onClickIncognito: (Boolean) -> Unit,
+    onClickUnhide: (mangaId: Long) -> Unit,
+    excludedManga: ImmutableList<Manga>,
 ) {
     val context = LocalContext.current
     var showNsfwWarning by remember { mutableStateOf(false) }
@@ -205,6 +211,30 @@ private fun ExtensionDetails(
                 onClickSourcePreferences = onClickSourcePreferences,
                 onClickSource = onClickSource,
             )
+        }
+
+        if (extension.sources.isNotEmpty() && excludedManga.isNotEmpty()) {
+            item {
+                Text(
+                    text = stringResource(MR.strings.label_hidden_manga),
+                    modifier = Modifier.padding(
+                        horizontal = MaterialTheme.padding.medium,
+                        vertical = MaterialTheme.padding.small,
+                    ),
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.primary,
+                )
+            }
+
+            items(
+                items = excludedManga,
+                key = { it.id },
+            ) { manga: Manga ->
+                TextPreferenceWidget(
+                    title = manga.title,
+                    onPreferenceClick = { onClickUnhide(manga.id) },
+                )
+            }
         }
     }
     if (showNsfwWarning) {

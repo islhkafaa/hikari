@@ -39,3 +39,35 @@ fun RemoveMangaDialog(
         },
     )
 }
+
+@Composable
+fun ExcludeMangaDialog(
+    onDismissRequest: () -> Unit,
+    onConfirm: () -> Unit,
+    mangaToHide: Manga,
+) {
+    AlertDialog(
+        onDismissRequest = onDismissRequest,
+        dismissButton = {
+            TextButton(onClick = onDismissRequest) {
+                Text(text = stringResource(MR.strings.action_cancel))
+            }
+        },
+        confirmButton = {
+            TextButton(
+                onClick = {
+                    onDismissRequest()
+                    onConfirm()
+                },
+            ) {
+                Text(text = stringResource(MR.strings.action_hide))
+            }
+        },
+        title = {
+            Text(text = stringResource(MR.strings.are_you_sure))
+        },
+        text = {
+            Text(text = stringResource(MR.strings.hide_manga_confirmation, mangaToHide.title))
+        },
+    )
+}

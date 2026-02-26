@@ -2,9 +2,7 @@ package eu.kanade.presentation.more
 
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.outlined.HelpOutline
 import androidx.compose.material.icons.automirrored.outlined.Label
-import androidx.compose.material.icons.outlined.AttachMoney
 import androidx.compose.material.icons.outlined.CloudOff
 import androidx.compose.material.icons.outlined.GetApp
 import androidx.compose.material.icons.outlined.Info
@@ -15,8 +13,8 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.vectorResource
+import eu.kanade.presentation.more.settings.widget.PreferenceGroupHeader
 import eu.kanade.presentation.more.settings.widget.SwitchPreferenceWidget
 import eu.kanade.presentation.more.settings.widget.TextPreferenceWidget
 import eu.kanade.tachiyomi.R
@@ -42,14 +40,12 @@ fun MoreScreen(
     onClickSettings: () -> Unit,
     onClickAbout: () -> Unit,
 ) {
-    val uriHandler = LocalUriHandler.current
-
     Scaffold { contentPadding ->
         ScrollbarLazyColumn(
             modifier = Modifier.padding(contentPadding),
         ) {
             item {
-                LogoHeader()
+                PreferenceGroupHeader(title = stringResource(MR.strings.label_general))
             }
             item {
                 SwitchPreferenceWidget(
@@ -70,7 +66,9 @@ fun MoreScreen(
                 )
             }
 
-            item { HorizontalDivider() }
+            item {
+                PreferenceGroupHeader(title = stringResource(MR.strings.label_features))
+            }
 
             item {
                 val downloadQueueState = downloadQueueStateProvider()
@@ -123,7 +121,9 @@ fun MoreScreen(
                 )
             }
 
-            item { HorizontalDivider() }
+            item {
+                PreferenceGroupHeader(title = stringResource(MR.strings.label_app))
+            }
 
             item {
                 TextPreferenceWidget(
@@ -137,20 +137,6 @@ fun MoreScreen(
                     title = stringResource(MR.strings.pref_category_about),
                     icon = Icons.Outlined.Info,
                     onPreferenceClick = onClickAbout,
-                )
-            }
-            item {
-                TextPreferenceWidget(
-                    title = stringResource(MR.strings.label_help),
-                    icon = Icons.AutoMirrored.Outlined.HelpOutline,
-                    onPreferenceClick = { uriHandler.openUri(Constants.URL_HELP) },
-                )
-            }
-            item {
-                TextPreferenceWidget(
-                    title = stringResource(MR.strings.label_donate),
-                    icon = Icons.Outlined.AttachMoney,
-                    onPreferenceClick = { uriHandler.openUri(Constants.URL_DONATE) },
                 )
             }
         }

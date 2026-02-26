@@ -34,6 +34,8 @@ class LibraryPreferences(
 
     fun lastUpdatedTimestamp() = preferenceStore.getLong(Preference.appStateKey("library_update_last_timestamp"), 0L)
     fun autoUpdateInterval() = preferenceStore.getInt("pref_library_update_interval_key", 0)
+    fun autoUpdateHour() = preferenceStore.getInt("pref_library_update_hour_key", 0)
+    fun autoUpdateMinute() = preferenceStore.getInt("pref_library_update_minute_key", 0)
 
     fun autoUpdateDeviceRestrictions() = preferenceStore.getStringSet(
         "library_update_restriction",

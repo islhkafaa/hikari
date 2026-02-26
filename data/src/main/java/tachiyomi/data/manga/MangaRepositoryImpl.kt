@@ -66,6 +66,10 @@ class MangaRepositoryImpl(
         return handler.subscribeToList { mangasQueries.getFavoriteBySourceId(sourceId, MangaMapper::mapManga) }
     }
 
+    override fun getExcludedBySourceId(sourceId: Long): Flow<List<Manga>> {
+        return handler.subscribeToList { mangasQueries.getExcludedBySourceId(sourceId, MangaMapper::mapManga) }
+    }
+
     override suspend fun getDuplicateLibraryManga(id: Long, title: String): List<MangaWithChapterCount> {
         return handler.awaitList {
             mangasQueries.getDuplicateLibraryManga(id, title, MangaMapper::mapMangaWithChapterCount)
@@ -142,12 +146,42 @@ class MangaRepositoryImpl(
                     dateAdded = it.dateAdded,
                     updateStrategy = it.updateStrategy,
                     version = it.version,
+                    excluded = it.excluded,
                     updateTitle = it.title.isNotBlank(),
                     updateCover = !it.thumbnailUrl.isNullOrBlank(),
                     updateDetails = it.initialized,
-                    mapper = MangaMapper::mapManga,
                 )
                     .executeAsOne()
+                    .let {
+                        MangaMapper.mapManga(
+                            id = it._id,
+                            source = it.source,
+                            url = it.url,
+                            artist = it.artist,
+                            author = it.author,
+                            description = it.description,
+                            genre = it.genre,
+                            title = it.title,
+                            status = it.status,
+                            thumbnailUrl = it.thumbnail_url,
+                            favorite = it.favorite,
+                            lastUpdate = it.last_update,
+                            nextUpdate = it.next_update,
+                            initialized = it.initialized,
+                            viewerFlags = it.viewer,
+                            chapterFlags = it.chapter_flags,
+                            coverLastModified = it.cover_last_modified,
+                            dateAdded = it.date_added,
+                            updateStrategy = it.update_strategy,
+                            calculateInterval = it.calculate_interval,
+                            lastModifiedAt = it.last_modified_at,
+                            favoriteModifiedAt = it.favorite_modified_at,
+                            version = it.version,
+                            isSyncing = it.is_syncing,
+                            notes = it.notes,
+                            excluded = it.excluded,
+                        )
+                    }
             }
         }
     }
@@ -179,6 +213,7 @@ class MangaRepositoryImpl(
                     version = value.version,
                     isSyncing = 0,
                     notes = value.notes,
+                    excluded = value.excluded,
                 )
             }
         }

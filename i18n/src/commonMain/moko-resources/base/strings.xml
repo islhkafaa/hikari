@@ -130,6 +130,12 @@
     <string name="action_display_show_number_of_items">Show number of items</string>
     <string name="action_display_show_continue_reading_button">Continue reading button</string>
     <string name="action_disable">Disable</string>
+    <string name="action_hide">Hide</string>
+    <string name="label_general">General</string>
+    <string name="label_features">Features</string>
+    <string name="label_app">App</string>
+    <string name="label_hidden_manga">Hidden manga</string>
+    <string name="hide_manga_confirmation">Are you sure you want to hide \"%s\" from this extension? You can unhide it from the extension details.</string>
     <string name="action_pin">Pin</string>
     <string name="action_unpin">Unpin</string>
     <string name="action_apply">Apply</string>
@@ -280,6 +286,7 @@
 
     <string name="pref_category_library_update">Global update</string>
     <string name="pref_library_update_interval">Automatic updates</string>
+    <string name="pref_library_update_time">Update time</string>
     <string name="update_never">Off</string>
     <string name="update_6hour">Every 6 hours</string>
     <string name="update_12hour">Every 12 hours</string>

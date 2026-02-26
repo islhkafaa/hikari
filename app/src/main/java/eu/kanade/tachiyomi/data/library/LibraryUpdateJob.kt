@@ -448,7 +448,7 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
                     .setRequiresBatteryNotLow(true)
                     .build()
 
-                val request = PeriodicWorkRequestBuilder<LibraryUpdateJob>(
+                val requestBuilder = PeriodicWorkRequestBuilder<LibraryUpdateJob>(
                     interval.toLong(),
                     TimeUnit.HOURS,
                     10,
@@ -458,7 +458,20 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
                     .addTag(WORK_NAME_AUTO)
                     .setConstraints(constraints)
                     .setBackoffCriteria(BackoffPolicy.LINEAR, 10, TimeUnit.MINUTES)
-                    .build()
+
+                val hour = preferences.autoUpdateHour().get()
+                val minute = preferences.autoUpdateMinute().get()
+                if (hour != 0 || minute != 0) {
+                    val now = ZonedDateTime.now()
+                    var updateTime = now.withHour(hour).withMinute(minute).withSecond(0).withNano(0)
+                    if (updateTime.isBefore(now)) {
+                        updateTime = updateTime.plusDays(1)
+                    }
+                    val initialDelay = java.time.Duration.between(now, updateTime)
+                    requestBuilder.setInitialDelay(initialDelay.toMillis(), TimeUnit.MILLISECONDS)
+                }
+
+                val request = requestBuilder.build()
 
                 context.workManager.enqueueUniquePeriodicWork(
                     WORK_NAME_AUTO,

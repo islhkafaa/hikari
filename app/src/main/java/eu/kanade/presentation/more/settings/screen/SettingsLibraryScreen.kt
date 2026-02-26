@@ -163,6 +163,30 @@ object SettingsLibraryScreen : SearchableSettings {
                         true
                     },
                 ),
+                Preference.PreferenceItem.TextPreference(
+                    title = stringResource(MR.strings.pref_library_update_time),
+                    subtitle = String.format(
+                        "%02d:%02d",
+                        libraryPreferences.autoUpdateHour().collectAsState().value,
+                        libraryPreferences.autoUpdateMinute().collectAsState().value,
+                    ),
+                    enabled = autoUpdateInterval > 0,
+                    onClick = {
+                        val currentHour = libraryPreferences.autoUpdateHour().get()
+                        val currentMinute = libraryPreferences.autoUpdateMinute().get()
+                        android.app.TimePickerDialog(
+                            context,
+                            { _, hour, minute ->
+                                libraryPreferences.autoUpdateHour().set(hour)
+                                libraryPreferences.autoUpdateMinute().set(minute)
+                                LibraryUpdateJob.setupTask(context)
+                            },
+                            currentHour,
+                            currentMinute,
+                            android.text.format.DateFormat.is24HourFormat(context),
+                        ).show()
+                    },
+                ),
                 Preference.PreferenceItem.MultiSelectListPreference(
                     preference = libraryPreferences.autoUpdateDeviceRestrictions(),
                     entries = persistentMapOf(
@@ -174,7 +198,6 @@ object SettingsLibraryScreen : SearchableSettings {
                     subtitle = stringResource(MR.strings.restrictions),
                     enabled = autoUpdateInterval > 0,
                     onValueChanged = {
-                        // Post to event looper to allow the preference to be updated.
                         ContextCompat.getMainExecutor(context).execute { LibraryUpdateJob.setupTask(context) }
                         true
                     },
