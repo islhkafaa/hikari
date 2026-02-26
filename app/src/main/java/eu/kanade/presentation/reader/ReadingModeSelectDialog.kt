@@ -88,7 +88,7 @@ private fun DialogContentPreview() {
                 )
 
                 DialogContent(
-                    readingMode = ReadingMode.LEFT_TO_RIGHT,
+                    readingMode = ReadingMode.WEBTOON,
                     onChangeReadingMode = {},
                 )
             }

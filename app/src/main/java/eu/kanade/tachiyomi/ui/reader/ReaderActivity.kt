@@ -453,10 +453,7 @@ class ReaderActivity : BaseActivity() {
 
         val isHttpSource = viewModel.getSource() is HttpSource
 
-        val cropBorderPaged by readerPreferences.cropBorders().collectAsState()
-        val cropBorderWebtoon by readerPreferences.cropBordersWebtoon().collectAsState()
-        val isPagerType = ReadingMode.isPagerType(viewModel.getMangaReadingMode())
-        val cropEnabled = if (isPagerType) cropBorderPaged else cropBorderWebtoon
+        val cropEnabled = readerPreferences.cropBordersWebtoon().collectAsState().value
 
         ReaderAppBars(
             visible = state.menuVisible,
@@ -872,7 +869,6 @@ class ReaderActivity : BaseActivity() {
                     setLayerPaint(grayscale, invertedColors)
                 }
                 .launchIn(lifecycleScope)
-
             combine(
                 readerPreferences.fullscreen().changes(),
                 readerPreferences.drawUnderCutout().changes(),

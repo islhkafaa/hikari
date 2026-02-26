@@ -747,12 +747,7 @@ class ReaderViewModel @JvmOverloads constructor(
     }
 
     fun toggleCropBorders(): Boolean {
-        val isPagerType = ReadingMode.isPagerType(getMangaReadingMode())
-        return if (isPagerType) {
-            readerPreferences.cropBorders().toggle()
-        } else {
-            readerPreferences.cropBordersWebtoon().toggle()
-        }
+        return readerPreferences.cropBordersWebtoon().toggle()
     }
 
     /**
